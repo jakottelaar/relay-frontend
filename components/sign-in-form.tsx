@@ -1,8 +1,7 @@
 "use client";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -10,30 +9,29 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { PasswordInput } from "@/components/ui/password-input";
-import { signUp } from "@/app/(auth)/sign-up/action";
+} from "./ui/form";
+import { Input } from "./ui/input";
+import { PasswordInput } from "./ui/password-input";
+import { Button } from "./ui/button";
+import { signIn } from "@/app/(auth)/sign-in/action";
 
-const formSchema = z.object({
-  username: z.string().min(1).min(3).max(64),
+const signInSchema = z.object({
   email: z.string().min(1).email(),
   password: z.string().min(8).max(64),
 });
 
-export default function SignUpForm() {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+const SignInForm = () => {
+  const form = useForm<z.infer<typeof signInSchema>>({
+    resolver: zodResolver(signInSchema),
     defaultValues: {
-      username: "",
       email: "",
       password: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function submitSignIn(values: z.infer<typeof signInSchema>) {
     try {
-      signUp(values);
+      signIn(values);
     } catch (error) {
       console.error("Form submission error", error);
     }
@@ -42,24 +40,9 @@ export default function SignUpForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(submitSignIn)}
         className="mx-auto max-w-3xl space-y-6 rounded-md p-20 shadow-lg dark:shadow-none"
       >
-        <FormField
-          control={form.control}
-          name="username"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Username</FormLabel>
-              <FormControl>
-                <Input placeholder="username" type="text" {...field} />
-              </FormControl>
-
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <FormField
           control={form.control}
           name="email"
@@ -89,11 +72,12 @@ export default function SignUpForm() {
             </FormItem>
           )}
         />
-
         <Button type="submit" className="w-full cursor-pointer">
-          Sign up
+          Sign in
         </Button>
       </form>
     </Form>
   );
-}
+};
+
+export default SignInForm;
