@@ -53,7 +53,7 @@ const MainSideBar = () => {
       </div>
 
       {/* Divider */}
-      <div className="ms-4 mb-2 h-0.5 w-8 rounded-full bg-zinc-700" />
+      <div className="ms-4 mb-2 h-[0.25px] w-8 rounded-full bg-zinc-700" />
 
       {/* Server List */}
       <div className="no-scrollbar flex flex-1 flex-col items-center gap-3 overflow-y-auto py-2">
