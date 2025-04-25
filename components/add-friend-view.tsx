@@ -9,7 +9,7 @@ const AddFriendView = () => {
         To add a friend, enter their username below.
       </p>
       <div className="flex w-full flex-row">
-        <Input className="" />
+        <Input placeholder="Username" />
         <Button className="ml-2 cursor-pointer bg-indigo-500 text-white duration-200 hover:bg-indigo-600">
           Add Friend
         </Button>

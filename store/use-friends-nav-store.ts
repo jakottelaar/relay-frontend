@@ -7,7 +7,7 @@ interface NavState {
   setPosition: (position: NavPosition) => void;
 }
 
-export const useNavStore = create<NavState>((set) => ({
+export const useNavFriendsStore = create<NavState>((set) => ({
   currentPosition: "online", // Default position
   setPosition: (position) => set({ currentPosition: position }),
 }));

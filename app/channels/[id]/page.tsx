@@ -5,10 +5,10 @@ import DirectMessageOverview from "@/components/direct-message-overview";
 import DirectMessagesSideBar from "@/components/direct-messages-side-bar";
 import OnlineFriendsView from "@/components/online-friends-view";
 import PendingFriendRequestsView from "@/components/pending-friend-requests-view";
-import { useNavStore } from "@/store/use-nav-store";
+import { useNavFriendsStore } from "@/store/use-friends-nav-store";
 
 const MainPage = () => {
-  const { currentPosition } = useNavStore();
+  const { currentPosition } = useNavFriendsStore();
 
   return (
     <div className="flex h-full w-full flex-row overflow-hidden rounded-lg border p-2">

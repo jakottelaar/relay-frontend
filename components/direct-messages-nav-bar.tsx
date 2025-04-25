@@ -7,10 +7,10 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { useNavStore } from "../store/use-nav-store";
+import { useNavFriendsStore } from "../store/use-friends-nav-store";
 
 const DirectMessagesNavBar = () => {
-  const { currentPosition, setPosition } = useNavStore();
+  const { currentPosition, setPosition } = useNavFriendsStore();
 
   return (
     <div className="w-full">
