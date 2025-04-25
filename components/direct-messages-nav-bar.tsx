@@ -23,7 +23,7 @@ const DirectMessagesNavBar = () => {
             className={`round cursor-pointer rounded-lg px-4 py-1 duration-200 ${
               currentPosition === "online"
                 ? "bg-zinc-700 text-white"
-                : "hover:bg-zinc-700 hover:text-white"
+                : "border-transparent hover:border-zinc-700 hover:bg-zinc-700 hover:text-white"
             }`}
             onClick={() => setPosition("online")}
           >
@@ -33,7 +33,7 @@ const DirectMessagesNavBar = () => {
             className={`round cursor-pointer rounded-lg px-4 py-1 duration-200 ${
               currentPosition === "all"
                 ? "bg-zinc-700 text-white"
-                : "hover:bg-zinc-700 hover:text-white"
+                : "border-transparent hover:border-zinc-700 hover:bg-zinc-700 hover:text-white"
             }`}
             onClick={() => setPosition("all")}
           >
@@ -43,7 +43,7 @@ const DirectMessagesNavBar = () => {
             className={`round cursor-pointer rounded-lg px-4 py-1 duration-200 ${
               currentPosition === "pending"
                 ? "bg-zinc-700 text-white"
-                : "hover:bg-zinc-700 hover:text-white"
+                : "border-transparent hover:border-zinc-700 hover:bg-zinc-700 hover:text-white"
             }`}
             onClick={() => setPosition("pending")}
           >
