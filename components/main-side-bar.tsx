@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { Separator } from "./ui/separator";
 
 const MainSideBar = () => {
   const [activeId, setActiveId] = useState("direct-messages");
@@ -17,7 +18,7 @@ const MainSideBar = () => {
 
   return (
     <div className="top-0 left-0 flex h-full flex-col py-3 pe-1">
-      <div className="group relative mb-4 flex items-center">
+      <div className="group relative mb-1 flex items-center">
         <div
           className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
             activeId === "direct-messages" ? "h-8 opacity-100" : "opacity-0"
@@ -51,9 +52,6 @@ const MainSideBar = () => {
           </svg>
         </div>
       </div>
-
-      {/* Divider */}
-      <div className="ms-4 mb-2 h-[0.25px] w-8 rounded-full bg-zinc-700" />
 
       {/* Server List */}
       <div className="no-scrollbar flex flex-1 flex-col items-center gap-3 overflow-y-auto py-2">
