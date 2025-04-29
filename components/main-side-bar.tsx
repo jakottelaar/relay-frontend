@@ -1,33 +1,28 @@
 "use client";
+import { useNavigationStore } from "@/store/use-navigation-store";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Separator } from "./ui/separator";
 
 const MainSideBar = () => {
-  const [activeId, setActiveId] = useState("direct-messages");
-
-  const mockServers = [
-    { id: "server1", name: "Gaming", icon: "🎮" },
-    { id: "server2", name: "Music", icon: "🎵" },
-    { id: "server3", name: "Study", icon: "📚" },
-    { id: "server4", name: "Movies", icon: "🎬" },
-  ];
-
-  const handleSelect = (id: string) => {
-    setActiveId(id);
-  };
+  const { type, serverId, setDmChannel, setServerChannel } =
+    useNavigationStore();
+  const router = useRouter();
 
   return (
     <div className="top-0 left-0 flex h-full flex-col py-3 pe-1">
       <div className="group relative mb-1 flex items-center">
         <div
           className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
-            activeId === "direct-messages" ? "h-8 opacity-100" : "opacity-0"
+            type === "dm" ? "h-8 opacity-100" : "opacity-0"
           }`}
         />
 
         <div
           className="cursor-pointer"
-          onClick={() => handleSelect("direct-messages")}
+          onClick={() => {
+            setDmChannel("default-dm-channel-id");
+            router.push("/channels/@me");
+          }}
         >
           <svg
             className="h-10 w-10 transition-all duration-200"
@@ -39,7 +34,7 @@ const MainSideBar = () => {
               <path
                 d="M0 20C0 10.572 9.53674e-07 5.857 2.929 2.929C5.857 9.53674e-07 10.571 0 20 0C29.428 0 34.142 9.53674e-07 37.071 2.929C40 5.857 40 10.572 40 20C40 29.428 40 34.142 37.071 37.071C34.142 40 29.428 40 20 40C10.571 40 5.857 40 2.929 37.071C9.53674e-07 34.142 0 29.428 0 20Z"
                 className={`transition-colors duration-200 ease-in-out ${
-                  activeId === "direct-messages"
+                  type === "dm"
                     ? "fill-indigo-600"
                     : "fill-zinc-700 hover:fill-indigo-600"
                 }`}
@@ -52,37 +47,37 @@ const MainSideBar = () => {
           </svg>
         </div>
       </div>
-
-      {/* Server List */}
-      <div className="no-scrollbar flex flex-1 flex-col items-center gap-3 overflow-y-auto py-2">
-        {mockServers.map((server) => (
-          <div
-            key={server.id}
-            className="group relative flex items-center"
-            onClick={() => handleSelect(server.id)}
-          >
-            {/* Active Server Indicator */}
-            <div
-              className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
-                activeId === server.id ? "h-8 opacity-100" : "opacity-0"
-              }`}
-            />
-
-            <div
-              className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-all duration-200 ${
-                activeId === server.id
-                  ? "bg-indigo-600 text-white"
-                  : "bg-zinc-700 hover:bg-indigo-600 hover:text-white"
-              }`}
-              title={server.name}
-            >
-              {server.icon}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 };
 
 export default MainSideBar;
+
+// {/* Server List */}
+// <div className="no-scrollbar flex flex-1 flex-col items-center gap-3 overflow-y-auto py-2">
+// {mockServers.map((server) => (
+//   <div
+//     key={server.id}
+//     className="group relative flex items-center"
+//     onClick={() => setServerChannel(server.id, "default-server-channel-id")}
+//   >
+//     {/* Active Server Indicator */}
+//     <div
+//       className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
+//         activeId === server.id ? "h-8 opacity-100" : "opacity-0"
+//       }`}
+//     />
+
+//     <div
+//       className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-all duration-200 ${
+//         activeId === server.id
+//           ? "bg-indigo-600 text-white"
+//           : "bg-zinc-700 hover:bg-indigo-600 hover:text-white"
+//       }`}
+//       title={server.name}
+//     >
+//       {server.icon}
+//     </div>
+//   </div>
+// ))}
+// </div>
