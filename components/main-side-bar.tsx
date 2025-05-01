@@ -1,26 +1,44 @@
 "use client";
-import { useNavigationStore } from "@/store/use-navigation-store";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const MainSideBar = () => {
-  const { type, serverId, setDmChannel, setServerChannel } =
-    useNavigationStore();
+  const [currentNavPosition, setNavPosition] = useState("dm");
+
   const router = useRouter();
+
+  const MockServers = [
+    {
+      id: "1",
+      name: "Server 1",
+    },
+    {
+      id: "2",
+      name: "Server 2",
+    },
+    {
+      id: "3",
+      name: "Server 3",
+    },
+    {
+      id: "4",
+      name: "Server 4",
+    },
+  ];
 
   return (
     <div className="top-0 left-0 flex h-full flex-col py-3 pe-1">
       <div className="group relative mb-1 flex items-center">
         <div
           className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
-            type === "dm" ? "h-8 opacity-100" : "opacity-0"
+            currentNavPosition === "dm" ? "h-8 opacity-100" : "opacity-0"
           }`}
         />
 
-        <div
+        <button
           className="cursor-pointer"
           onClick={() => {
-            setDmChannel("default-dm-channel-id");
+            setNavPosition("dm");
             router.push("/channels/@me");
           }}
         >
@@ -34,7 +52,7 @@ const MainSideBar = () => {
               <path
                 d="M0 20C0 10.572 9.53674e-07 5.857 2.929 2.929C5.857 9.53674e-07 10.571 0 20 0C29.428 0 34.142 9.53674e-07 37.071 2.929C40 5.857 40 10.572 40 20C40 29.428 40 34.142 37.071 37.071C34.142 40 29.428 40 20 40C10.571 40 5.857 40 2.929 37.071C9.53674e-07 34.142 0 29.428 0 20Z"
                 className={`transition-colors duration-200 ease-in-out ${
-                  type === "dm"
+                  currentNavPosition === "dm"
                     ? "fill-indigo-600"
                     : "fill-zinc-700 hover:fill-indigo-600"
                 }`}
@@ -45,7 +63,35 @@ const MainSideBar = () => {
               />
             </g>
           </svg>
-        </div>
+        </button>
+      </div>
+
+      <div className="no-scrollbar flex flex-1 flex-col items-center gap-3 overflow-y-auto py-2">
+        {MockServers.map((server) => (
+          <div
+            key={server.id}
+            className="group relative flex flex-row items-center"
+          >
+            <div
+              className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
+                currentNavPosition === "server"
+                  ? "h-8 opacity-100"
+                  : "opacity-0"
+              }`}
+            />
+            <button
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-lg bg-indigo-600 transition-all duration-200"
+              onClick={() => {
+                setNavPosition("server");
+                router.push(`/channels/${server.id}/default-server-channel-id`);
+              }}
+            >
+              {/* Active Server Indicator */}
+
+              {server.name[0]}
+            </button>
+          </div>
+        ))}
       </div>
     </div>
   );
