@@ -1,21 +1,11 @@
-"use client";
-import { createClient } from "@/utils/supabase/client";
-
-const AuthLayout = async ({ children }: { children: React.ReactNode }) => {
-  const supabase = createClient();
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  if (session) {
-    window.location.href = "/";
-  }
-
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <div className="flex h-screen w-screen items-center justify-center">
+    <div className="flex h-screen w-screen flex-col items-center justify-center px-4 py-1">
       {children}
     </div>
   );
-};
-
-export default AuthLayout;
+}
