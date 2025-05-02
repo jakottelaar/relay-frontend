@@ -1,8 +1,18 @@
-export default function AuthLayout({
+import { createClient } from "@/utils/supabase/server";
+import { redirect } from "next/navigation";
+
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const supabase = await createClient();
+
+  const { data } = await supabase.auth.getUser();
+  if (data.user) {
+    redirect("/channels/@me");
+  }
+
   return (
     <div className="flex h-screen w-screen flex-col items-center justify-center px-4 py-1">
       {children}
