@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/axios";
 
 export interface Relationship {
@@ -13,9 +13,27 @@ const fetchRelationships = async (): Promise<Relationship[]> => {
   return data.relationships;
 };
 
+const sendFriendRequest = async (username: string) => {
+  const { data } = await apiClient.post("/relationships/friend-requests", {
+    username,
+  });
+  console.log("Friend request sent", data);
+};
+
 export function useRelationships() {
   return useQuery({
     queryKey: ["relationships"],
     queryFn: fetchRelationships,
+  });
+}
+
+export function useSendFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: sendFriendRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["relationships"] });
+    },
   });
 }
