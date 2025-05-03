@@ -20,6 +20,20 @@ const sendFriendRequest = async (username: string) => {
   console.log("Friend request sent", data);
 };
 
+const acceptFriendRequest = async (targetUserId: string) => {
+  const { data } = await apiClient.patch(
+    `/relationships/users/${targetUserId}/friend-requests`,
+  );
+  console.log("Friend request accepted", data);
+};
+
+const cancelOrRejectFriendRequest = async (targetUserId: string) => {
+  const { data } = await apiClient.delete(
+    `/relationships/users/${targetUserId}/friend-requests`,
+  );
+  console.log("Friend request cancelled or rejected", data);
+};
+
 export function useRelationships() {
   return useQuery({
     queryKey: ["relationships"],
@@ -32,6 +46,28 @@ export function useSendFriendRequest() {
 
   return useMutation({
     mutationFn: sendFriendRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["relationships"] });
+    },
+  });
+}
+
+export function useAcceptFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: acceptFriendRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["relationships"] });
+    },
+  });
+}
+
+export function useCancelOrRejectFriendRequest() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: cancelOrRejectFriendRequest,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["relationships"] });
     },
