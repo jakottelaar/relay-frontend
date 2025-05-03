@@ -63,6 +63,9 @@ const PendingFriendRequestsView = () => {
       </h1>
       <ScrollArea className="h-full w-full">
         <div className="flex flex-col gap-2">
+          {incomingRequests.length > 0 && (
+            <h1 className="mt-4 mb-2 text-sm font-semibold">Incoming</h1>
+          )}
           {incomingRequests.map((request) => (
             <div key={request.id}>
               <IncomingPendingFriendRequestItem
@@ -72,6 +75,9 @@ const PendingFriendRequestsView = () => {
               />
             </div>
           ))}
+          {outgoingRequests.length > 0 && (
+            <h1 className="mt-4 mb-2 text-sm font-semibold">Outgoing</h1>
+          )}
           {outgoingRequests.map((request) => (
             <div key={request.id}>
               <OutgoingPendingFriendRequestItem

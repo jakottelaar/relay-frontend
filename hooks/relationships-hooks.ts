@@ -6,6 +6,13 @@ export interface Relationship {
   user_id: string;
   other_user_id: string;
   relationship_status: "friend" | "incoming" | "outgoing" | "blocked";
+  other_user: {
+    id: string;
+    username: string;
+    email: string;
+    avatar_url: string;
+    updated_at: string;
+  };
 }
 
 const fetchRelationships = async (): Promise<Relationship[]> => {
