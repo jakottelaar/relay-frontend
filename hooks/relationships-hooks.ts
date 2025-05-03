@@ -41,6 +41,13 @@ const cancelOrRejectFriendRequest = async (targetUserId: string) => {
   console.log("Friend request cancelled or rejected", data);
 };
 
+const removeFriend = async (targetUserId: string) => {
+  const { data } = await apiClient.delete(
+    `/relationships/users/${targetUserId}/friends`,
+  );
+  console.log("Friend removed", data);
+};
+
 export function useRelationships() {
   return useQuery({
     queryKey: ["relationships"],
@@ -75,6 +82,17 @@ export function useCancelOrRejectFriendRequest() {
 
   return useMutation({
     mutationFn: cancelOrRejectFriendRequest,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["relationships"] });
+    },
+  });
+}
+
+export function useRemoveFriend() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: removeFriend,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["relationships"] });
     },
