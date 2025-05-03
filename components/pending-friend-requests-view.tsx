@@ -1,7 +1,8 @@
 import { useRelationships } from "@/hooks/relationships-hooks";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
-import PendingFriendRequestItem from "./pending-friend-request-item";
+import IncomingPendingFriendRequestItem from "./incoming-pending-friend-request-item";
+import OutgoingPendingFriendRequestItem from "./outgoing-pending-friend-request-item";
 
 const PendingFriendRequestsView = () => {
   const { data: relationships, isLoading, error } = useRelationships();
@@ -29,7 +30,7 @@ const PendingFriendRequestsView = () => {
         <div className="flex flex-col gap-2">
           {incomingRequests.map((request) => (
             <div key={request.id}>
-              <PendingFriendRequestItem
+              <IncomingPendingFriendRequestItem
                 {...request}
                 onAccept={() => console.log("Accept", request.id)}
                 onReject={() => console.log("Reject", request.id)}
@@ -38,10 +39,9 @@ const PendingFriendRequestsView = () => {
           ))}
           {outgoingRequests.map((request) => (
             <div key={request.id}>
-              <PendingFriendRequestItem
+              <OutgoingPendingFriendRequestItem
                 {...request}
-                onAccept={() => console.log("Accept", request.id)}
-                onReject={() => console.log("Reject", request.id)}
+                onCancel={() => console.log("Cancel", request.id)}
               />
             </div>
           ))}
