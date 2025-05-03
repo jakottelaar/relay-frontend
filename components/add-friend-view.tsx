@@ -32,7 +32,13 @@ const AddFriendView = () => {
         }, 3000);
       },
       onError: () => {
-        setWasSuccessful(false);
+        addFriendForm.setError("username", {
+          type: "manual",
+          message: "Failed to send friend request please try again",
+        });
+        setTimeout(() => {
+          addFriendForm.clearErrors("username");
+        }, 3000);
       },
     });
   }
