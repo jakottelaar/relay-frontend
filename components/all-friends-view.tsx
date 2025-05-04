@@ -51,10 +51,10 @@ const AllFriendsView = () => {
         ) : (
           friends.map((friend) => (
             <div
-              className="flex w-full flex-row justify-between border-t"
+              className="flex w-full cursor-pointer flex-row justify-between rounded-lg border-t p-2 duration-200 hover:border-transparent hover:bg-zinc-900"
               key={friend.id}
             >
-              <div className="flex flex-row items-center py-2">
+              <div className="flex flex-row items-center">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={friend.other_user.avatar_url} />
                   <AvatarFallback className="cursor-default">
@@ -65,7 +65,7 @@ const AllFriendsView = () => {
                   {friend.other_user.username}
                 </h1>
               </div>
-              <div className="flex flex-row items-center gap-2 py-2 pr-2">
+              <div className="flex flex-row items-center gap-2 pr-2">
                 <button className="group cursor-pointer rounded-full p-1 duration-200 hover:bg-zinc-800">
                   <MessageCircle />
                 </button>

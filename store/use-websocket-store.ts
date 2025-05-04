@@ -12,12 +12,30 @@ interface WSStore {
   lastMessage: MessageEvent | null;
   sendMessage: (msg: string) => void;
   readyState: ReadyState;
+  onlineUsers: string[];
+  setOnlineUsers: (users: string[]) => void;
+  addOnlineUser: (id: string) => void;
+  removeOnlineUser: (id: string) => void;
 }
 
 export const useWSStore = create<WSStore>(() => ({
   lastMessage: null,
   sendMessage: () => {},
   readyState: WebSocket.CLOSED,
+  onlineUsers: [],
+  setOnlineUsers: (users: string[]) => {
+    useWSStore.setState({ onlineUsers: users });
+  },
+  addOnlineUser: (id: string) => {
+    useWSStore.setState((state) => ({
+      onlineUsers: [...state.onlineUsers, id],
+    }));
+  },
+  removeOnlineUser: (id: string) => {
+    useWSStore.setState((state) => ({
+      onlineUsers: state.onlineUsers.filter((userId) => userId !== id),
+    }));
+  },
 }));
 
 export function useWebSocketClient() {
@@ -63,6 +81,18 @@ export function useWebSocketClient() {
             });
             queryClient.invalidateQueries({ queryKey: ["relationships"] });
             break;
+
+          case "ONLINE_USERS":
+            useWSStore.getState().setOnlineUsers(msg.data);
+            break;
+
+          case "USER_WENT_ONLINE":
+            useWSStore.getState().addOnlineUser(msg.data);
+            break;
+
+          case "USER_WENT_OFFLINE":
+            useWSStore.getState().removeOnlineUser(msg.data);
+            break;
         }
 
         // Always update Zustand with the latest raw message
@@ -75,5 +105,9 @@ export function useWebSocketClient() {
   // Keep Zustand store in sync with send/readyState
   useEffect(() => {
     useWSStore.setState({ sendMessage, readyState });
+
+    if (readyState === ReadyState.OPEN) {
+      sendMessage(JSON.stringify({ type: "GET_ONLINE_USERS" }));
+    }
   }, [sendMessage, readyState]);
 }
