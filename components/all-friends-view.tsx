@@ -46,7 +46,7 @@ const AllFriendsView = () => {
           </div>
         ) : friends.length === 0 ? (
           <div className="flex h-full w-full items-center justify-center">
-            No friends found.
+            No friends found
           </div>
         ) : (
           friends.map((friend) => (
