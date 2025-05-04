@@ -46,14 +46,23 @@ export function useWebSocketClient() {
       shouldReconnect: () => true,
       onMessage: (event) => {
         const msg = JSON.parse(event.data);
+        const sender = msg.data.sender;
 
-        if (msg.type === "FRIEND_REQUEST_RECEIVED") {
-          const sender = msg.data.sender;
-          toast("Friend Request", {
-            description: `${sender.username} sent you a friend request.`,
-          });
+        switch (msg.type) {
+          case "FRIEND_REQUEST_RECEIVED":
+            toast("Friend Request", {
+              description: `${sender.username} sent you a friend request.`,
+            });
 
-          queryClient.invalidateQueries({ queryKey: ["relationships"] });
+            queryClient.invalidateQueries({ queryKey: ["relationships"] });
+            break;
+
+          case "FRIEND_REQUEST_ACCEPTED":
+            toast("Friend Request", {
+              description: `${sender.username} accepted your friend request.`,
+            });
+            queryClient.invalidateQueries({ queryKey: ["relationships"] });
+            break;
         }
 
         // Always update Zustand with the latest raw message
