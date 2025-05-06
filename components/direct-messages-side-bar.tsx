@@ -8,18 +8,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
-import { useDMSidebarStore } from "@/store/use-direct-message-sidebar-store";
-import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
+import { useState } from "react";
 
 const DirectMessagesSideBar = () => {
-  const router = useRouter();
-  const { currentView, selectedChannelId, dmChannels, selectChannel, setView } =
-    useDMSidebarStore();
-
-  const handleFriendsClick = () => {
-    setView("friends");
-  };
+  const [currentView, setView] = useState("friends");
 
   return (
     <div className="top-0 left-0 flex h-full w-[300px] flex-col border-r pe-2">
@@ -33,7 +26,9 @@ const DirectMessagesSideBar = () => {
         className={`mb-2 flex cursor-pointer items-center rounded-md p-2 ${
           currentView === "friends" ? "bg-zinc-700" : "hover:bg-zinc-800"
         }`}
-        onClick={handleFriendsClick}
+        onClick={() => {
+          setView("friends");
+        }}
       >
         <Users className="mr-2 h-5 w-5" />
         <span className="text-sm font-medium">Friends</span>
