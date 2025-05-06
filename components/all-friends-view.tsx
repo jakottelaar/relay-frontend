@@ -75,7 +75,7 @@ const AllFriendsView = () => {
                       <EllipsisVertical />
                     </button>
                   </PopoverTrigger>
-                  <PopoverContent className="bg-background flex h-fit w-fit flex-col items-center justify-center gap-2 rounded-md border p-2 text-xs font-semibold shadow-md">
+                  <PopoverContent className="flex h-fit w-fit flex-col items-center justify-center gap-2 rounded-md border-none bg-zinc-800 p-2 text-xs font-semibold shadow-md">
                     <button className="w-full cursor-pointer rounded-md p-2 text-start text-blue-400 duration-200 hover:bg-blue-400/10">
                       Voice call
                     </button>
