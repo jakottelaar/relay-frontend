@@ -14,10 +14,22 @@ const fetchDMChannel = async (targetUserId: string): Promise<Channel> => {
   return data.channel;
 };
 
+const fetchAllDMChannels = async (): Promise<Channel[]> => {
+  const { data } = await apiClient.get("/channels");
+  return data.channels;
+};
+
 export function useDMChannel(targetUserId: string) {
   return useQuery({
     queryKey: ["dmChannel", targetUserId],
     queryFn: () => fetchDMChannel(targetUserId),
     enabled: !!targetUserId,
+  });
+}
+
+export function useDMChannels() {
+  return useQuery({
+    queryKey: ["dmChannels"],
+    queryFn: fetchAllDMChannels,
   });
 }
