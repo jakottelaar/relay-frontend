@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { Users } from "lucide-react";
-import { useState } from "react";
 import { useDMChannels } from "@/hooks/channels-hooks";
 import { useDMSideBarStore } from "@/store/use-direct-message-side-bar-store";
 import { useRouter } from "next/navigation";
@@ -27,7 +26,6 @@ const DirectMessagesSideBar = () => {
       </button>
       <Separator className="my-3" />
 
-      {/* Friends option */}
       <div
         className={`mb-2 flex cursor-pointer items-center rounded-md p-2 ${
           currentView === "friends"

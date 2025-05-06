@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useRemoveFriend } from "@/hooks/relationships-hooks";
 import { useDMChannel } from "@/hooks/channels-hooks";
 import { useRouter } from "next/navigation";
+import { useDMSideBarStore } from "@/store/use-direct-message-side-bar-store";
 
 interface friendProps {
   id: string;
@@ -12,9 +13,10 @@ interface friendProps {
 }
 
 export default function FriendItem({ friend }: { friend: friendProps }) {
+  const router = useRouter();
   const removeFriendMutation = useRemoveFriend();
   const { data: channel } = useDMChannel(friend.id);
-  const router = useRouter();
+  const { setCurrentView, setSelectedChannel } = useDMSideBarStore();
 
   const handleRemoveFriend = (targetUserId: string) => {
     removeFriendMutation.mutate(targetUserId, {
@@ -32,6 +34,8 @@ export default function FriendItem({ friend }: { friend: friendProps }) {
       onClick={() => {
         if (channel) {
           router.push(`/channels/@me/${channel.id}`);
+          setCurrentView("dms");
+          setSelectedChannel(channel.id);
         }
       }}
       className="flex w-full cursor-pointer flex-row justify-between rounded-lg border-t p-2 duration-200 hover:border-transparent hover:bg-zinc-900"
