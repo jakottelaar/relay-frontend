@@ -1,11 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import apiClient from "@/lib/axios";
 
+export interface ChannelMember {
+  id: string;
+  username: string;
+  email: string;
+  avatar_url: string;
+  updated_at: string;
+}
+
 export interface Channel {
   id: string;
   name: string;
   owner_id: string;
   channel_type: "dm" | "group";
+  channel_members: ChannelMember[];
   created_at: string;
 }
 

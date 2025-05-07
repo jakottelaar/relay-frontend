@@ -1,5 +1,5 @@
-import DirectMessagesSideBar from "@/components/direct-messages-side-bar";
-import ServerSideBar from "@/components/server-side-bar";
+import DirectMessagesSideBar from "@/components/direct-messages-sidebar";
+import ServerSideBar from "@/components/server-sidebar";
 
 export default async function ServerLayout({
   children,

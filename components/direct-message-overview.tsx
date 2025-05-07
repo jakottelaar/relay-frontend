@@ -1,4 +1,4 @@
-import DirectMessagesNavBar from "./direct-messages-nav-bar";
+import DirectMessagesNavBar from "./direct-messages-navbar";
 
 const DirectMessageOverview = ({ children }: { children: React.ReactNode }) => {
   return (

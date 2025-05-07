@@ -12,12 +12,12 @@ import { Users } from "lucide-react";
 import { useDMChannels } from "@/hooks/channels-hooks";
 import { useDMSideBarStore } from "@/store/use-direct-message-side-bar-store";
 import { useRouter } from "next/navigation";
+import DirectMessagesSideBarItem from "./direct-messages-sidebar-item";
 
 const DirectMessagesSideBar = () => {
   const router = useRouter();
   const { data: channels, isLoading } = useDMChannels();
-  const { currentView, setCurrentView, selectedChannel, setSelectedChannel } =
-    useDMSideBarStore();
+  const { currentView, setCurrentView } = useDMSideBarStore();
 
   return (
     <div className="top-0 left-0 flex h-full w-[300px] flex-col border-r pe-2">
@@ -58,21 +58,7 @@ const DirectMessagesSideBar = () => {
           <div className="text-muted-foreground text-sm">Loading...</div>
         ) : (
           channels?.map((channel) => (
-            <div
-              key={channel.id}
-              className={`cursor-pointer rounded p-2 text-xs ${
-                currentView === "dms" && channel.id === selectedChannel
-                  ? "bg-zinc-700"
-                  : "duration-200 hover:bg-zinc-800"
-              }`}
-              onClick={() => {
-                router.push(`/channels/@me/${channel.id}`);
-                setSelectedChannel(channel.id);
-                setCurrentView("dms");
-              }}
-            >
-              {channel.name}
-            </div>
+            <DirectMessagesSideBarItem channel={channel} key={channel.id} />
           ))
         )}
       </ScrollArea>
