@@ -15,7 +15,7 @@ export default async function ServerLayout({
   return (
     <div className="flex h-full w-full">
       {isDirectMessage ? <DirectMessagesSideBar /> : <ServerSideBar />}
-      <div className="flex-1">{children}</div>
+      <div className="flex-1 px-4 py-1">{children}</div>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-// useWebSocketClient.ts
 "use client";
 
 import useWebSocket, { ReadyState } from "react-use-websocket";
@@ -43,19 +42,31 @@ export function useWebSocketClient() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const getTokenAndSetUrl = async () => {
-      const supabase = createClient();
+    const supabase = createClient();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (session?.access_token) {
+          console.log("[Auth] Session is ready. Setting WebSocket URL.");
+          setSocketUrl(`ws://localhost:8080/ws?token=${session.access_token}`);
+        } else {
+          console.warn("[Auth] No session yet.");
+        }
+      },
+    );
+
+    (async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
-      const token = session?.access_token;
-      if (token) {
-        setSocketUrl(`ws://localhost:8080/ws?token=${token}`);
+      if (session?.access_token) {
+        setSocketUrl(`ws://localhost:8080/ws?token=${session.access_token}`);
       }
-    };
+    })();
 
-    getTokenAndSetUrl();
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
   const { sendMessage, readyState, lastMessage } = useWebSocket(
@@ -107,6 +118,7 @@ export function useWebSocketClient() {
     useWSStore.setState({ sendMessage, readyState });
 
     if (readyState === ReadyState.OPEN) {
+      console.log("WebSocket connection opened.");
       sendMessage(JSON.stringify({ type: "GET_ONLINE_USERS" }));
     }
   }, [sendMessage, readyState]);

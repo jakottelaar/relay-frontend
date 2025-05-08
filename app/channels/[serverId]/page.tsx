@@ -10,7 +10,7 @@ export default function ServerPage() {
   const { currentPosition } = useNavFriendsStore();
 
   return (
-    <div className="flex h-full w-full flex-col px-4 py-1">
+    <div className="flex h-full w-full flex-col">
       <DirectMessageOverview>
         {currentPosition === "online" && <OnlineFriendsView />}
         {currentPosition === "all" && <AllFriendsView />}
