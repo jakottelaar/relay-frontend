@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 const OnlineFriendsView = () => {
   const onlineUsers = useWSStore((state) => state.onlineUsers);
-  const { data: relationships, isLoading, error } = useRelationships();
+  const { data: relationships } = useRelationships();
 
   const friends =
     relationships?.filter((r) => r.relationship_status === "friend") || [];

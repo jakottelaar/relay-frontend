@@ -9,7 +9,7 @@ import IncomingPendingFriendRequestItem from "./incoming-pending-friend-request-
 import OutgoingPendingFriendRequestItem from "./outgoing-pending-friend-request-item";
 
 const PendingFriendRequestsView = () => {
-  const { data: relationships, isLoading, error } = useRelationships();
+  const { data: relationships, isLoading } = useRelationships();
   const acceptMutation = useAcceptFriendRequest();
   const rejectOrCancelMutation = useCancelOrRejectFriendRequest();
 
