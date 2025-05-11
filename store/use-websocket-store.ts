@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { create } from "zustand";
 import { createClient } from "@/utils/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { Message } from "@/hooks/messages-hooks";
 
 interface WSStore {
   lastMessage: MessageEvent | null;
@@ -15,6 +16,7 @@ interface WSStore {
   setOnlineUsers: (users: string[]) => void;
   addOnlineUser: (id: string) => void;
   removeOnlineUser: (id: string) => void;
+  joinChannel: (channelId: string) => void;
 }
 
 export const useWSStore = create<WSStore>(() => ({
@@ -34,6 +36,14 @@ export const useWSStore = create<WSStore>(() => ({
     useWSStore.setState((state) => ({
       onlineUsers: state.onlineUsers.filter((userId) => userId !== id),
     }));
+  },
+  joinChannel: (channelId: string) => {
+    useWSStore.getState().sendMessage(
+      JSON.stringify({
+        type: "JOIN_CHANNEL",
+        channel_id: channelId,
+      }),
+    );
   },
 }));
 
@@ -74,40 +84,73 @@ export function useWebSocketClient() {
     {
       shouldReconnect: () => true,
       onMessage: (event) => {
-        const msg = JSON.parse(event.data);
-        const sender = msg.data.sender;
+        try {
+          const rawMessage = JSON.parse(event.data);
 
-        switch (msg.type) {
-          case "FRIEND_REQUEST_RECEIVED":
-            toast("Friend Request", {
-              description: `${sender.username} sent you a friend request.`,
-            });
+          if (typeof rawMessage !== "object" || !rawMessage.type) {
+            console.warn("Received malformed message:", rawMessage);
+            return;
+          }
 
-            queryClient.invalidateQueries({ queryKey: ["relationships"] });
-            break;
+          const { type, data, message } = rawMessage;
 
-          case "FRIEND_REQUEST_ACCEPTED":
-            toast("Friend Request", {
-              description: `${sender.username} accepted your friend request.`,
-            });
-            queryClient.invalidateQueries({ queryKey: ["relationships"] });
-            break;
+          switch (type) {
+            case "FRIEND_REQUEST_RECEIVED":
+            case "FRIEND_REQUEST_ACCEPTED":
+              if (data?.sender?.username) {
+                const actionText =
+                  type === "FRIEND_REQUEST_RECEIVED"
+                    ? "sent you"
+                    : "accepted your";
+                toast("Friend Request", {
+                  description: `${data.sender.username} ${actionText} a friend request.`,
+                });
+                queryClient.invalidateQueries({ queryKey: ["relationships"] });
+              } else {
+                console.warn("Missing sender info in message:", rawMessage);
+              }
+              break;
 
-          case "ONLINE_USERS":
-            useWSStore.getState().setOnlineUsers(msg.data);
-            break;
+            case "ONLINE_USERS":
+              if (Array.isArray(data)) {
+                useWSStore.getState().setOnlineUsers(data);
+              } else {
+                console.warn("ONLINE_USERS message had invalid data:", data);
+              }
+              break;
 
-          case "USER_WENT_ONLINE":
-            useWSStore.getState().addOnlineUser(msg.data);
-            break;
+            case "USER_WENT_ONLINE":
+              if (typeof data === "string") {
+                useWSStore.getState().addOnlineUser(data);
+              }
+              break;
 
-          case "USER_WENT_OFFLINE":
-            useWSStore.getState().removeOnlineUser(msg.data);
-            break;
+            case "USER_WENT_OFFLINE":
+              if (typeof data === "string") {
+                useWSStore.getState().removeOnlineUser(data);
+              }
+              break;
+
+            case "MESSAGE_SENT":
+              if (message?.channel_id) {
+                queryClient.setQueryData<Message[]>(
+                  ["messages", message.channel_id],
+                  (existing = []) => [...existing, message],
+                );
+              } else {
+                console.warn("Invalid MESSAGE_SENT payload:", message);
+              }
+              break;
+
+            default:
+              console.warn("Unhandled message type:", type);
+              break;
+          }
+
+          useWSStore.setState({ lastMessage: event });
+        } catch (err) {
+          console.error("Failed to handle WebSocket message:", err);
         }
-
-        // Always update Zustand with the latest raw message
-        useWSStore.setState({ lastMessage: event });
       },
       skipAssert: !socketUrl,
     },
