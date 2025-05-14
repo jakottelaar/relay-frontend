@@ -1,5 +1,4 @@
 "use client";
-
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -53,7 +52,6 @@ export function useWebSocketClient() {
 
   useEffect(() => {
     const supabase = createClient();
-
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.access_token) {
@@ -86,7 +84,6 @@ export function useWebSocketClient() {
       onMessage: (event) => {
         try {
           const rawMessage = JSON.parse(event.data);
-
           if (typeof rawMessage !== "object" || !rawMessage.type) {
             console.warn("Received malformed message:", rawMessage);
             return;
@@ -133,9 +130,26 @@ export function useWebSocketClient() {
 
             case "MESSAGE_SENT":
               if (message?.channel_id) {
-                queryClient.setQueryData<Message[]>(
+                // Properly update the infinite query cache
+                queryClient.setQueryData(
                   ["messages", message.channel_id],
-                  (existing = []) => [...existing, message],
+                  (oldData: any) => {
+                    if (!oldData)
+                      return { pages: [[message]], pageParams: [1] };
+
+                    // Create a new pages array with the new message added to the first page
+                    const newPages = [...oldData.pages];
+                    if (newPages[0]) {
+                      newPages[0] = [...newPages[0], message];
+                    } else {
+                      newPages[0] = [message];
+                    }
+
+                    return {
+                      ...oldData,
+                      pages: newPages,
+                    };
+                  },
                 );
               } else {
                 console.warn("Invalid MESSAGE_SENT payload:", message);
@@ -159,7 +173,6 @@ export function useWebSocketClient() {
   // Keep Zustand store in sync with send/readyState
   useEffect(() => {
     useWSStore.setState({ sendMessage, readyState });
-
     if (readyState === ReadyState.OPEN) {
       console.log("WebSocket connection opened.");
       sendMessage(JSON.stringify({ type: "GET_ONLINE_USERS" }));
