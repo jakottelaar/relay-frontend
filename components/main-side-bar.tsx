@@ -1,9 +1,61 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Button } from "./ui/button";
+import { Pencil, Settings } from "lucide-react";
+import { createClient } from "@/utils/supabase/client";
+import { User } from "@supabase/supabase-js";
+import SettingsDialog from "./settings-dialog";
 
-const MainSideBar = () => {
+type UserProfileData = {
+  username: string;
+  avatar_url: string;
+  created_at: string;
+};
+
+export default function MainSidebar() {
   const [currentNavPosition, setNavPosition] = useState("dm");
+  const [user, setUser] = useState<User | null>(null);
+  const [profile, setProfile] = useState<UserProfileData | null>(null);
+
+  useEffect(() => {
+    const getProfile = async () => {
+      try {
+        const supabase = createClient();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
+
+        if (userError) {
+          console.error("Error fetching user:", userError);
+          return;
+        }
+
+        setUser(user);
+
+        if (!user) return;
+
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("username, avatar_url, created_at")
+          .eq("id", user.id)
+          .single();
+
+        if (profileError) {
+          console.error("Error fetching profile:", profileError);
+          return;
+        }
+        setProfile(profile);
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+      }
+    };
+
+    getProfile();
+  }, []); // Empty dependency array
 
   const router = useRouter();
 
@@ -12,22 +64,10 @@ const MainSideBar = () => {
       id: "1",
       name: "Server 1",
     },
-    {
-      id: "2",
-      name: "Server 2",
-    },
-    {
-      id: "3",
-      name: "Server 3",
-    },
-    {
-      id: "4",
-      name: "Server 4",
-    },
   ];
 
   return (
-    <div className="top-0 left-0 flex h-full flex-col py-3 pe-1">
+    <div className="top-0 left-0 flex h-full flex-col border-r py-3 pe-3">
       <div className="group relative mb-1 flex items-center">
         <div
           className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
@@ -93,37 +133,35 @@ const MainSideBar = () => {
           </div>
         ))}
       </div>
+      <div className="ms-3">
+        <Popover>
+          <PopoverTrigger>
+            <Avatar className="h-10 w-10 cursor-pointer border-2 border-transparent duration-200 hover:border-indigo-600">
+              <AvatarFallback>T</AvatarFallback>
+              <AvatarImage src={profile?.avatar_url} />
+            </Avatar>
+          </PopoverTrigger>
+          <PopoverContent className="ms-2 flex flex-col gap-2 border-none px-2 py-4">
+            <div className="mb-4 flex flex-row items-center gap-2">
+              <Avatar className="h-16 w-16 border-2 border-zinc-800">
+                <AvatarFallback>T</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url} />
+              </Avatar>
+              <span className="font-semibold">{profile?.username}</span>
+            </div>
+            <div className="flex flex-col gap-2">
+              <SettingsDialog />
+              <Button className="cursor-pointer justify-start border-none bg-zinc-800 text-zinc-400 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-200">
+                Online
+              </Button>
+              <Button className="cursor-pointer justify-start border-none bg-zinc-800 text-zinc-400 transition-all duration-200 hover:bg-zinc-700 hover:text-zinc-200">
+                <Settings />
+                Settings
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   );
-};
-
-export default MainSideBar;
-
-// {/* Server List */}
-// <div className="no-scrollbar flex flex-1 flex-col items-center gap-3 overflow-y-auto py-2">
-// {mockServers.map((server) => (
-//   <div
-//     key={server.id}
-//     className="group relative flex items-center"
-//     onClick={() => setServerChannel(server.id, "default-server-channel-id")}
-//   >
-//     {/* Active Server Indicator */}
-//     <div
-//       className={`me-2 h-0 w-1 rounded-r-md bg-white transition-all duration-200 group-hover:h-6 group-hover:opacity-100 ${
-//         activeId === server.id ? "h-8 opacity-100" : "opacity-0"
-//       }`}
-//     />
-
-//     <div
-//       className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-all duration-200 ${
-//         activeId === server.id
-//           ? "bg-indigo-600 text-white"
-//           : "bg-zinc-700 hover:bg-indigo-600 hover:text-white"
-//       }`}
-//       title={server.name}
-//     >
-//       {server.icon}
-//     </div>
-//   </div>
-// ))}
-// </div>
+}
