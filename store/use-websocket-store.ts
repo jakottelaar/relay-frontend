@@ -155,7 +155,30 @@ export function useWebSocketClient() {
                 console.warn("Invalid MESSAGE_SENT payload:", message);
               }
               break;
+            case "MESSAGE_UPDATE":
+              if (message?.channel_id && message?.id) {
+                // Update the specific message in the cache
+                queryClient.setQueryData(
+                  ["messages", message.channel_id],
+                  (oldData: any) => {
+                    if (!oldData) return oldData;
 
+                    const updatedPages = oldData.pages.map((page: Message[]) =>
+                      page.map((msg) =>
+                        msg.id === message.id ? { ...msg, ...message } : msg,
+                      ),
+                    );
+
+                    return {
+                      ...oldData,
+                      pages: updatedPages,
+                    };
+                  },
+                );
+              } else {
+                console.warn("Invalid MESSAGE_UPDATE payload:", message);
+              }
+              break;
             default:
               console.warn("Unhandled message type:", type);
               break;

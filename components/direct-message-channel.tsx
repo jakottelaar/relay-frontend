@@ -1,5 +1,12 @@
 "use client";
-import { Phone, UserPlus, Video } from "lucide-react";
+import {
+  EllipsisVertical,
+  Pencil,
+  Phone,
+  Trash,
+  UserPlus,
+  Video,
+} from "lucide-react";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -7,10 +14,16 @@ import { useEffect, useRef, useState } from "react";
 import {
   useChannelMessagesInfinite,
   useCreateMessage,
+  useUpdateMessage,
 } from "@/hooks/messages-hooks";
 import { useWSStore } from "@/store/use-websocket-store";
 import { useDMSideBarStore } from "@/store/use-direct-message-side-bar-store";
-import { ReadyState } from "react-use-websocket";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 export default function DirectMessageChannel({
   params,
@@ -19,10 +32,14 @@ export default function DirectMessageChannel({
 }) {
   const { serverId, channelId } = params;
   const [input, setInput] = useState("");
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState("");
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const { readyState, joinChannel } = useWSStore();
-  const { mutate } = useCreateMessage();
+  const { mutate: createMessage } = useCreateMessage();
+  const { mutate: updateMessage } = useUpdateMessage();
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const {
     data: messages,
@@ -37,9 +54,7 @@ export default function DirectMessageChannel({
     useDMSideBarStore.getState().setCurrentView("dms");
     useDMSideBarStore.getState().setSelectedChannel(channelId);
 
-    if (readyState === ReadyState.OPEN) {
-      joinChannel(channelId);
-    }
+    joinChannel(channelId);
 
     setShouldScrollToBottom(true);
   }, [channelId, readyState, joinChannel]);
@@ -79,31 +94,81 @@ export default function DirectMessageChannel({
     return () => viewport.removeEventListener("scroll", handleScroll);
   }, [messages, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  const send = () => {
-    try {
-      if (input.trim() === "") return;
+  useEffect(() => {
+    if (editingMessageId && editInputRef.current) {
+      editInputRef.current.focus();
+    }
+  }, [editingMessageId]);
 
-      mutate(
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && editingMessageId) {
+        handleCancelEdit();
+      }
+    };
+
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [editingMessageId]);
+
+  const sendMessage = () => {
+    if (input.trim() === "") return;
+    createMessage(
+      {
+        channelId: channelId,
+        content: input,
+      },
+      {
+        onSuccess: () => {
+          setInput("");
+          setShouldScrollToBottom(true);
+        },
+        onError: (error) => {
+          console.error("Failed to send message:", error);
+        },
+      },
+    );
+  };
+
+  const handleEditClick = (messageId: string, content: string) => {
+    setEditingMessageId(messageId);
+    setEditContent(content);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingMessageId) {
+      updateMessage(
         {
+          messageId: editingMessageId,
           channelId: channelId,
-          content: input,
+          content: editContent,
         },
         {
           onSuccess: () => {
-            setInput("");
+            setEditingMessageId(null);
+            setEditContent("");
             setShouldScrollToBottom(true);
           },
           onError: (error) => {
-            console.error("Failed to send message:", error);
+            console.error("Failed to update message:", error);
           },
         },
       );
+    }
+    setEditingMessageId(null);
+  };
 
-      setInput("");
-      setShouldScrollToBottom(true);
-      console.log("Messages: ", messages);
-    } catch (error) {
-      console.error("Error sending message:", error);
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditContent("");
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSaveEdit();
+    } else if (e.key === "Escape") {
+      handleCancelEdit();
     }
   };
 
@@ -139,26 +204,65 @@ export default function DirectMessageChannel({
             )}
 
             {displayMessages.map((message) => (
-              <div
-                key={message.id}
-                className="flex cursor-default items-center gap-2 rounded-md p-1 hover:bg-zinc-900"
-              >
-                <Avatar>
-                  <AvatarImage src={message.sender_id} />
-                  <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-semibold text-zinc-200">
-                      {message.sender_id}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {new Date(message.created_at).toLocaleString()}
-                    </p>
+              <div key={message.id} className="group relative">
+                <div className="flex cursor-default items-center gap-2 rounded-md p-1 group-hover:bg-zinc-900">
+                  <Avatar>
+                    <AvatarImage src={message.sender_id} />
+                    <AvatarFallback>U</AvatarFallback>
+                  </Avatar>
+                  <div className="flex w-full flex-col">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-zinc-200">
+                        {message.sender_id}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {new Date(message.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    {editingMessageId === message.id ? (
+                      <Input
+                        ref={editInputRef}
+                        value={editContent}
+                        onChange={(e) => setEditContent(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="mt-1 w-full rounded-md border-none text-white placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:outline-none"
+                        placeholder={"Edit message"}
+                      />
+                    ) : (
+                      <p className="text-sm text-zinc-300">{message.content}</p>
+                    )}
                   </div>
-                  <p className="max-w-[900px] text-sm break-words text-zinc-400">
-                    {message.content}
-                  </p>
+                </div>
+                <div className="absolute top-1 right-2 flex -translate-y-1/2 flex-row items-center gap-3 rounded-md bg-zinc-800 p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          className="cursor-pointer"
+                          onClick={() =>
+                            handleEditClick(message.id, message.content)
+                          }
+                        >
+                          <Pencil height={16} width={16} />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button className="cursor-pointer">
+                          <Trash
+                            height={16}
+                            width={16}
+                            className="stroke-red-400"
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             ))}
@@ -170,7 +274,7 @@ export default function DirectMessageChannel({
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === "Enter") send();
+          if (e.key === "Enter") sendMessage();
         }}
         className="mt-2 w-full rounded-md border-none text-white placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:outline-none"
         placeholder={"Message @username"}

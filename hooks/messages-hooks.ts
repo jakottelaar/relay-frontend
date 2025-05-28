@@ -38,6 +38,22 @@ const createMessage = async ({
   return data.message;
 };
 
+const updateMessage = async ({
+  messageId,
+  channelId,
+  content,
+}: {
+  messageId: string;
+  channelId: string;
+  content: string;
+}): Promise<Message> => {
+  const { data } = await apiClient.patch(
+    `/channels/${channelId}/messages/${messageId}`,
+    { content },
+  );
+  return data.message;
+};
+
 export function useChannelMessagesInfinite(channelId: string) {
   return useInfiniteQuery({
     queryKey: ["messages", channelId],
@@ -60,5 +76,11 @@ export function useChannelMessagesInfinite(channelId: string) {
 export function useCreateMessage() {
   return useMutation({
     mutationFn: createMessage,
+  });
+}
+
+export function useUpdateMessage() {
+  return useMutation({
+    mutationFn: updateMessage,
   });
 }
