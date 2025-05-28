@@ -128,7 +128,7 @@ export function useWebSocketClient() {
               }
               break;
 
-            case "MESSAGE_SENT":
+            case "MESSAGE_CREATE":
               if (message?.channel_id) {
                 // Properly update the infinite query cache
                 queryClient.setQueryData(

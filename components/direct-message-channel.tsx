@@ -4,7 +4,10 @@ import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useEffect, useRef, useState } from "react";
-import { useChannelMessagesInfinite } from "@/hooks/messages-hooks";
+import {
+  useChannelMessagesInfinite,
+  useCreateMessage,
+} from "@/hooks/messages-hooks";
 import { useWSStore } from "@/store/use-websocket-store";
 import { useDMSideBarStore } from "@/store/use-direct-message-side-bar-store";
 import { ReadyState } from "react-use-websocket";
@@ -19,6 +22,7 @@ export default function DirectMessageChannel({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [shouldScrollToBottom, setShouldScrollToBottom] = useState(true);
   const { readyState, joinChannel } = useWSStore();
+  const { mutate } = useCreateMessage();
 
   const {
     data: messages,
@@ -30,22 +34,18 @@ export default function DirectMessageChannel({
 
   // Join channel and set sidebar state
   useEffect(() => {
-    // Set sidebar state
     useDMSideBarStore.getState().setCurrentView("dms");
     useDMSideBarStore.getState().setSelectedChannel(channelId);
 
-    // Join channel when websocket is ready
     if (readyState === ReadyState.OPEN) {
       joinChannel(channelId);
     }
 
-    // Reset scroll state on channel change
     setShouldScrollToBottom(true);
   }, [channelId, readyState, joinChannel]);
 
   // Handle scrolling
   useEffect(() => {
-    // Get viewport element
     const viewport = scrollAreaRef.current?.querySelector(
       "[data-radix-scroll-area-viewport]",
     ) as HTMLDivElement | null;
@@ -59,7 +59,6 @@ export default function DirectMessageChannel({
 
     // Setup scroll listener for infinite scrolling
     const handleScroll = () => {
-      // Check if we're near top to load older messages
       if (viewport.scrollTop < 50 && hasNextPage && !isFetchingNextPage) {
         const scrollHeight = viewport.scrollHeight;
         const scrollPos = viewport.scrollTop;
@@ -70,7 +69,6 @@ export default function DirectMessageChannel({
         });
       }
 
-      // Determine if we should auto-scroll on new messages
       const isNearBottom =
         viewport.scrollHeight - viewport.scrollTop - viewport.clientHeight <
         100;
@@ -81,20 +79,32 @@ export default function DirectMessageChannel({
     return () => viewport.removeEventListener("scroll", handleScroll);
   }, [messages, isLoading, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // Send message handler
   const send = () => {
-    if (input.trim() === "") return;
+    try {
+      if (input.trim() === "") return;
 
-    useWSStore.getState().sendMessage(
-      JSON.stringify({
-        type: "SEND_MESSAGE",
-        channel_id: channelId,
-        content: input,
-      }),
-    );
+      mutate(
+        {
+          channelId: channelId,
+          content: input,
+        },
+        {
+          onSuccess: () => {
+            setInput("");
+            setShouldScrollToBottom(true);
+          },
+          onError: (error) => {
+            console.error("Failed to send message:", error);
+          },
+        },
+      );
 
-    setInput("");
-    setShouldScrollToBottom(true);
+      setInput("");
+      setShouldScrollToBottom(true);
+      console.log("Messages: ", messages);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   const displayMessages = messages?.pages?.flatMap((page) => page) || [];
