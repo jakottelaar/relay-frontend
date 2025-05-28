@@ -1,12 +1,5 @@
 "use client";
-import {
-  EllipsisVertical,
-  Pencil,
-  Phone,
-  Trash,
-  UserPlus,
-  Video,
-} from "lucide-react";
+import { Pencil, Phone, Trash, UserPlus, Video } from "lucide-react";
 import { Input } from "./ui/input";
 import { ScrollArea } from "./ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -14,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   useChannelMessagesInfinite,
   useCreateMessage,
+  useDeleteMessage,
   useUpdateMessage,
 } from "@/hooks/messages-hooks";
 import { useWSStore } from "@/store/use-websocket-store";
@@ -24,6 +18,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "./ui/alert-dialog";
 
 export default function DirectMessageChannel({
   params,
@@ -39,6 +43,7 @@ export default function DirectMessageChannel({
   const { readyState, joinChannel } = useWSStore();
   const { mutate: createMessage } = useCreateMessage();
   const { mutate: updateMessage } = useUpdateMessage();
+  const { mutate: deleteMessage } = useDeleteMessage();
   const editInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -172,6 +177,20 @@ export default function DirectMessageChannel({
     }
   };
 
+  const handleDeleteMessage = (messageId: string) => {
+    deleteMessage(
+      { messageId: messageId, channelId: channelId },
+      {
+        onSuccess: () => {
+          setShouldScrollToBottom(true);
+        },
+        onError: (error) => {
+          console.error("Failed to delete message:", error);
+        },
+      },
+    );
+  };
+
   const displayMessages = messages?.pages?.flatMap((page) => page) || [];
 
   return (
@@ -205,65 +224,89 @@ export default function DirectMessageChannel({
 
             {displayMessages.map((message) => (
               <div key={message.id} className="group relative">
-                <div className="flex cursor-default items-center gap-2 rounded-md p-1 group-hover:bg-zinc-900">
-                  <Avatar>
-                    <AvatarImage src={message.sender_id} />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                  <div className="flex w-full flex-col">
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-semibold text-zinc-200">
-                        {message.sender_id}
-                      </p>
-                      <p className="text-xs text-zinc-500">
-                        {new Date(message.created_at).toLocaleString()}
-                      </p>
+                <AlertDialog>
+                  <div className="flex cursor-default items-center gap-2 rounded-md p-1 group-hover:bg-zinc-900">
+                    <Avatar>
+                      <AvatarImage src={message.sender_id} />
+                      <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                    <div className="flex w-full flex-col">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-semibold text-zinc-200">
+                          {message.sender_id}
+                        </p>
+                        <p className="text-xs text-zinc-500">
+                          {new Date(message.created_at).toLocaleString()}
+                        </p>
+                      </div>
+                      {editingMessageId === message.id ? (
+                        <Input
+                          ref={editInputRef}
+                          value={editContent}
+                          onChange={(e) => setEditContent(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          className="mt-1 w-full rounded-md border-none text-white placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:outline-none"
+                          placeholder={"Edit message"}
+                        />
+                      ) : (
+                        <p className="text-sm text-zinc-300">
+                          {message.content}
+                        </p>
+                      )}
                     </div>
-                    {editingMessageId === message.id ? (
-                      <Input
-                        ref={editInputRef}
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        className="mt-1 w-full rounded-md border-none text-white placeholder:text-zinc-400 focus-visible:ring-0 focus-visible:outline-none"
-                        placeholder={"Edit message"}
-                      />
-                    ) : (
-                      <p className="text-sm text-zinc-300">{message.content}</p>
-                    )}
                   </div>
-                </div>
-                <div className="absolute top-1 right-2 flex -translate-y-1/2 flex-row items-center gap-3 rounded-md bg-zinc-800 p-2 opacity-0 transition-opacity group-hover:opacity-100">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button
-                          className="cursor-pointer"
-                          onClick={() =>
-                            handleEditClick(message.id, message.content)
-                          }
-                        >
-                          <Pencil height={16} width={16} />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>Edit</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <button className="cursor-pointer">
-                          <Trash
-                            height={16}
-                            width={16}
-                            className="stroke-red-400"
-                          />
-                        </button>
-                      </TooltipTrigger>
-                      <TooltipContent>Delete</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                  <div className="absolute top-1 right-2 flex -translate-y-1/2 flex-row items-center gap-3 rounded-md bg-zinc-800 p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <button
+                            className="cursor-pointer"
+                            onClick={() =>
+                              handleEditClick(message.id, message.content)
+                            }
+                          >
+                            <Pencil height={16} width={16} />
+                          </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Edit</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <AlertDialogTrigger asChild>
+                            <button className="cursor-pointer">
+                              <Trash
+                                height={16}
+                                width={16}
+                                className="stroke-red-400"
+                              />
+                            </button>
+                          </AlertDialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent>Delete</TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you want to delete this message?
+                      </AlertDialogTitle>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="cursor-pointer border-none">
+                        Cancel
+                      </AlertDialogCancel>
+                      <AlertDialogAction
+                        className="cursor-pointer bg-red-500/10 text-red-400 transition-all duration-200 hover:bg-red-500/20"
+                        onClick={() => handleDeleteMessage(message.id)}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             ))}
           </div>

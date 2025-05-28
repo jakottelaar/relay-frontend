@@ -179,6 +179,29 @@ export function useWebSocketClient() {
                 console.warn("Invalid MESSAGE_UPDATE payload:", message);
               }
               break;
+
+            case "MESSAGE_DELETE":
+              if (message?.channel_id && message?.id) {
+                // Remove the specific message from the cache
+                queryClient.setQueryData(
+                  ["messages", message.channel_id],
+                  (oldData: any) => {
+                    if (!oldData) return oldData;
+
+                    const updatedPages = oldData.pages.map((page: Message[]) =>
+                      page.filter((msg) => msg.id !== message.id),
+                    );
+
+                    return {
+                      ...oldData,
+                      pages: updatedPages,
+                    };
+                  },
+                );
+              } else {
+                console.warn("Invalid MESSAGE_DELETE payload:", message);
+              }
+              break;
             default:
               console.warn("Unhandled message type:", type);
               break;

@@ -54,6 +54,16 @@ const updateMessage = async ({
   return data.message;
 };
 
+const deleteMessage = async ({
+  messageId,
+  channelId,
+}: {
+  messageId: string;
+  channelId: string;
+}): Promise<void> => {
+  await apiClient.delete(`/channels/${channelId}/messages/${messageId}`);
+};
+
 export function useChannelMessagesInfinite(channelId: string) {
   return useInfiniteQuery({
     queryKey: ["messages", channelId],
@@ -82,5 +92,11 @@ export function useCreateMessage() {
 export function useUpdateMessage() {
   return useMutation({
     mutationFn: updateMessage,
+  });
+}
+
+export function useDeleteMessage() {
+  return useMutation({
+    mutationFn: deleteMessage,
   });
 }
