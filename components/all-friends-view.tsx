@@ -20,11 +20,16 @@ const AllFriendsView = () => {
       </h1>
       <ScrollArea className="h-full w-full">
         {isLoading ? (
-          <div className="flex h-full w-full flex-col items-center justify-center gap-2">
-            <div className="flex w-full flex-row items-center justify-between gap-2 border-b py-2">
-              <Skeleton className="h-12 w-12 rounded-full" />
-              <Skeleton className="h-10 w-full" />
-            </div>
+          <div>
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="flex w-full items-center gap-2 border-t py-2"
+              >
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <Skeleton className="h-3 w-[200px] rounded" />
+              </div>
+            ))}
           </div>
         ) : error ? (
           <div className="flex h-full w-full items-center justify-center">

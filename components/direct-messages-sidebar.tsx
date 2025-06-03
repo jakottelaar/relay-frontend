@@ -13,6 +13,7 @@ import { useDMChannels } from "@/hooks/channels-hooks";
 import { useDMSideBarStore } from "@/store/use-direct-message-side-bar-store";
 import { useRouter } from "next/navigation";
 import DirectMessagesSideBarItem from "./direct-messages-sidebar-item";
+import { Skeleton } from "./ui/skeleton";
 
 const DirectMessagesSideBar = () => {
   const router = useRouter();
@@ -55,7 +56,17 @@ const DirectMessagesSideBar = () => {
 
       <ScrollArea className="mt-2 h-full">
         {isLoading ? (
-          <div className="text-muted-foreground text-sm">Loading...</div>
+          <div className="flex flex-col space-y-2">
+            {Array.from({ length: 5 }).map((_, idx) => (
+              <div
+                key={idx}
+                className="flex items-center space-x-2 rounded-md p-1 hover:bg-zinc-800"
+              >
+                <Skeleton className="h-8 w-8 rounded-full" />
+                <Skeleton className="h-2 w-[150px]" />
+              </div>
+            ))}
+          </div>
         ) : (
           channels?.map((channel) => (
             <DirectMessagesSideBarItem channel={channel} key={channel.id} />
