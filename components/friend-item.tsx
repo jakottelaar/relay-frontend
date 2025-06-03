@@ -44,21 +44,27 @@ export default function FriendItem({ friend }: { friend: friendProps }) {
       <div className="flex flex-row items-center">
         <Avatar className="h-10 w-10">
           <AvatarImage src={friend.avatar_url} />
-          <AvatarFallback className="cursor-default">
+          <AvatarFallback>
             {friend.username.charAt(0).toUpperCase()}
           </AvatarFallback>
         </Avatar>
-        <h1 className="ml-2 cursor-default text-sm font-semibold">
-          {friend.username}
-        </h1>
+        <h1 className="ml-2 text-sm font-semibold">{friend.username}</h1>
       </div>
       <div className="flex flex-row items-center gap-2 pr-2">
-        <button className="group cursor-pointer rounded-full p-1 duration-200 hover:bg-zinc-800">
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+          }}
+          className="group cursor-pointer rounded-full p-1 duration-200 hover:bg-zinc-800"
+        >
           <MessageCircle />
         </button>
         <Popover>
           <PopoverTrigger asChild>
-            <button className="group cursor-pointer rounded-full p-1 duration-200 hover:bg-zinc-800">
+            <button
+              onClick={(e) => e.stopPropagation()}
+              className="group cursor-pointer rounded-full p-1 duration-200 hover:bg-zinc-800"
+            >
               <EllipsisVertical />
             </button>
           </PopoverTrigger>

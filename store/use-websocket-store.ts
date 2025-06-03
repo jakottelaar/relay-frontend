@@ -92,11 +92,12 @@ export function useWebSocketClient() {
           const { type, data, message } = rawMessage;
 
           switch (type) {
-            case "FRIEND_REQUEST_RECEIVED":
-            case "FRIEND_REQUEST_ACCEPTED":
+            case "RELATIONSHIP_FRIEND_REQUEST_CREATE":
+            case "RELATIONSHIP_FRIEND_REQUEST_ACCEPTED":
               if (data?.sender?.username) {
+                console.log(data);
                 const actionText =
-                  type === "FRIEND_REQUEST_RECEIVED"
+                  type === "RELATIONSHIP_FRIEND_REQUEST_CREATE"
                     ? "sent you"
                     : "accepted your";
                 toast("Friend Request", {

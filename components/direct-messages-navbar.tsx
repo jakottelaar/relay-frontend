@@ -1,5 +1,5 @@
 "use client";
-import { Users, MessageCirclePlus } from "lucide-react";
+import { Users, MessageCirclePlus, Bell } from "lucide-react";
 import { Separator } from "./ui/separator";
 import {
   Tooltip,
@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { useNavFriendsStore } from "../store/use-friends-nav-store";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 const DirectMessagesNavBar = () => {
   const { currentPosition, setPosition } = useNavFriendsStore();
@@ -59,16 +60,31 @@ const DirectMessagesNavBar = () => {
           >
             Add Friend
           </button>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild className="ms-auto">
+          <div className="ms-auto flex flex-row items-center gap-6">
+            <Popover>
+              <PopoverTrigger asChild className="cursor-pointer">
                 <button>
-                  <MessageCirclePlus className="duration-200 hover:stroke-white" />
+                  <Bell className="duration-200 hover:stroke-white" />
                 </button>
-              </TooltipTrigger>
-              <TooltipContent>New group DM</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              </PopoverTrigger>
+              <PopoverContent className="me-20 mt-2">
+                <div className="flex flex-row items-center gap-2 font-semibold">
+                  <Bell height={20} width={20} />
+                  <p>Notifications</p>
+                </div>
+              </PopoverContent>
+            </Popover>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button>
+                    <MessageCirclePlus className="duration-200 hover:stroke-white" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>New group DM</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </div>
       </div>
       <Separator className="my-3 bg-zinc-700" />
